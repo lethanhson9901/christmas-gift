@@ -1,26 +1,40 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Gift, Sparkles, Star, Music } from 'lucide-react';
 import christmasGirl from '../../assets/1.png';
+import jingleBells from '../../assets/jingle-bells.mp3'; // Import the audio file
 
 const ChristmasGift = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [showSparkles, setShowSparkles] = useState(false);
   const [showMagicCircle, setShowMagicCircle] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(true);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [autoplayFailed, setAutoplayFailed] = useState(false);
   const audioRef = useRef(null);
 
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.volume = 0.5;
+
+      // Attempt to autoplay
+      const playAudio = async () => {
+        try {
+          await audioRef.current.play();
+          setIsPlaying(true);
+        } catch (error) {
+          setAutoplayFailed(true);
+        }
+      };
+
+      playAudio();
     }
   }, []);
 
-  // Start music on first click
   const handleGiftClick = () => {
     setIsOpen(!isOpen);
     setShowSparkles(true);
     setShowMagicCircle(true);
+
     if (audioRef.current && !isPlaying) {
       audioRef.current.play();
       setIsPlaying(true);
@@ -42,11 +56,29 @@ const ChristmasGift = () => {
     <div className="relative flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-red-950 via-green-950 to-red-950 overflow-hidden">
       {/* Audio Element */}
       <audio ref={audioRef} loop>
-        <source src="/jingle-bells.mp3" type="audio/mp3" />
+        <source src={jingleBells} type="audio/mp3" />
       </audio>
 
+      {/* Fallback Play Button */}
+      {autoplayFailed && (
+        <div className="absolute top-4 left-4 z-50">
+          <button
+            onClick={() => {
+              if (audioRef.current) {
+                audioRef.current.play();
+                setIsPlaying(true);
+                setAutoplayFailed(false);
+              }
+            }}
+            className="p-2 bg-green-500 text-white rounded-lg shadow hover:bg-green-600"
+          >
+            🎵 Click to Play Music
+          </button>
+        </div>
+      )}
+
       {/* Audio Control Button */}
-      <button 
+      <button
         onClick={toggleAudio}
         className="absolute top-4 right-4 z-50 p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors duration-300"
       >
