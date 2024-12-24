@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Gift, Sparkles, Star, Music } from 'lucide-react';
+import christmasGirl from '../../assets/1.png';
 
 const ChristmasGift = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -10,49 +11,48 @@ const ChristmasGift = () => {
   const audioRef = useRef(null);
 
   useEffect(() => {
-    audioRef.current = new Audio('/jingle-bells.mp3');
-    audioRef.current.loop = true;
-
-    const handleClick = () => {
-      if (audioRef.current) {
-        audioRef.current.play().catch(console.warn);
-        document.removeEventListener('click', handleClick);
-      }
-    };
-
-    document.addEventListener('click', handleClick);
-    
-    return () => {
-      document.removeEventListener('click', handleClick);
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current = null;
-      }
-    };
+    if (audioRef.current) {
+      audioRef.current.volume = 0.5;
+    }
   }, []);
 
-  useEffect(() => {
-    if (isOpen) {
-      setShowSparkles(true);
-      setShowMagicCircle(true);
-      setTimeout(() => setShowSparkles(false), 6000);
-      setTimeout(() => setShowMagicCircle(false), 4000);
+  // Start music on first click
+  const handleGiftClick = () => {
+    setIsOpen(!isOpen);
+    setShowSparkles(true);
+    setShowMagicCircle(true);
+    if (audioRef.current && !isPlaying) {
+      audioRef.current.play();
+      setIsPlaying(true);
     }
-  }, [isOpen]);
+  };
 
-  useEffect(() => {
-    if (!audioRef.current) return;
-
-    if (isPlaying) {
-      audioRef.current.play().catch(console.warn);
-    } else {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
+  const toggleAudio = () => {
+    if (audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.pause();
+      } else {
+        audioRef.current.play();
+      }
+      setIsPlaying(!isPlaying);
     }
-  }, [isPlaying]);
+  };
 
   return (
     <div className="relative flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-red-950 via-green-950 to-red-950 overflow-hidden">
+      {/* Audio Element */}
+      <audio ref={audioRef} loop>
+        <source src="/jingle-bells.mp3" type="audio/mp3" />
+      </audio>
+
+      {/* Audio Control Button */}
+      <button 
+        onClick={toggleAudio}
+        className="absolute top-4 right-4 z-50 p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors duration-300"
+      >
+        <Music className={`w-6 h-6 ${isPlaying ? 'text-green-400' : 'text-red-400'}`} />
+      </button>
+
       {/* Northern Lights Effect */}
       <div className="absolute inset-0">
         <div className="absolute inset-0 bg-gradient-to-r from-green-500/20 via-blue-500/20 to-purple-500/20 animate-aurora"></div>
@@ -64,17 +64,6 @@ const ChristmasGift = () => {
         <div className="snow"></div>
         <div className="snow"></div>
       </div>
-
-      {/* Music Control */}
-      <button 
-        onClick={(e) => {
-          e.stopPropagation();
-          setIsPlaying(!isPlaying);
-        }}
-        className="absolute top-4 right-4 p-2 rounded-full bg-white/10 hover:bg-white/20 transition-all duration-300"
-      >
-        <Music className={`w-6 h-6 ${isPlaying ? 'text-green-400' : 'text-white/60'}`} />
-      </button>
 
       {/* Magical Circle */}
       {showMagicCircle && (
@@ -101,7 +90,7 @@ const ChristmasGift = () => {
         className={`relative transform transition-all duration-3000 cursor-pointer
           ${isOpen ? 'scale-125' : 'scale-100'}
           ${isHovered ? 'animate-float-gentle' : ''}`}
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={handleGiftClick}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
@@ -148,8 +137,8 @@ const ChristmasGift = () => {
               {/* Magic Emergence Effect */}
               <div className="absolute inset-0 bg-gradient-to-t from-white/5 to-white/20 rounded-lg backdrop-blur-sm animate-emerge">
                 <img
-                  src="/api/placeholder/400/320"
-                  alt="Christmas surprise" 
+                  src={christmasGirl}
+                  alt="Christmas anime girl" 
                   className="w-full h-full object-contain transform animate-float-up"
                 />
                 
